@@ -174,18 +174,17 @@ app.post("/login", async function (request, response) {
 
 app.post("/urlshortener", async (req, res) => {
   const { url } = req.body;
-  const BASE_URL = "http://localhost:5000/";
   const url_short = nanoid(6);
   const createdat = new Date();
   const url_object = {
     full_url: url,
     short_url: url_short,
-    new_url: `${BASE_URL}${url_short}`,
+    new_url: `${process.env.BASE_URL}/${url_short}`,
     createAt: createdat,
     clicks: 0,
   };
   await createURL(url_object);
-  res.send({ message: `${BASE_URL}${url_short}` });
+  res.send({ message: `${process.env.BASE_URL}/${url_short}` });
 });
 
 app.get("/urlList", async (req, res) => {
