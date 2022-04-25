@@ -6,7 +6,7 @@ export const MailTransporter = async (email, subject, text) => {
       host: process.env.PORT,
       service: process.env.SERVICE,
       port: 587,
-      secure: true,
+      secure: false,
       auth: {
         user: process.env.USER,
         pass: process.env.PASS,
