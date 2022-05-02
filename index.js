@@ -26,7 +26,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 //MongoConnection
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 4000;
 const MONGO_URL = process.env.MONGO_URL;
 
 export const client = await createConnection();
@@ -170,6 +170,41 @@ app.post("/login", async function (request, response) {
       response.status(401).send({ message: "Invalid email or password" });
     }
   }
+});
+
+app.post("/reset-password/2", async (req, res) => {
+  const { email } = req.body;
+
+  const userFromDb = await getUserByEmail(email);
+  if (!userFromDb) {
+    res.status(400).send({ message: "No such user" });
+    return;
+  }
+
+  const user_token_check = await checkUserInToken(userFromDb._id);
+  if (user_token_check) {
+    removeToken(userFromDb._id);
+  }
+
+  const token = jwt.sign({ id: userFromDb._id }, process.env.SECRET_KEY, {
+    expiresIn: "10m", //600000 milli seconds
+  });
+
+  let current_time = Date.now();
+  let expiry_time = current_time + 600000;
+  const user_token = {
+    user_id: userFromDb._id,
+    token: token,
+    createdAt: current_time,
+    ExpiresIn: expiry_time,
+  };
+
+  await createTokenForUser(user_token);
+  const link = `${process.env.BASE_URL_2}/reset-password/${userFromDb._id}/${token}`;
+  const subject = "Rest Password";
+  const text = `Please Click the link below to reset the passsword for security reasons the link will be expired in the next 10 minutes \n ${link}`;
+  await MailTransporter(email, subject, text);
+  res.status(200).send({ message: "Mail sent" });
 });
 
 app.post("/urlshortener", async (req, res) => {
