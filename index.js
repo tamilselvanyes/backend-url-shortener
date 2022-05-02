@@ -49,6 +49,25 @@ app.post("/signup", async (req, res) => {
   res.send(result);
 });
 
+//Added for second application
+app.post("/signupcheck", async (req, res) => {
+  const { email, password } = req.body;
+  const hashedpassword = await genPassword(password);
+  const new_user = {
+    email: email,
+    password: hashedpassword,
+    activated: false,
+  };
+  const result = await createUser(new_user);
+  const link = `${process.env.BASE_URL_2}/activate-account/${
+    (await getUserByEmail(email))._id
+  }`;
+  const subject = "Account Activation";
+  const text = `Please Click the link below to activate your account, you will only be able to login after activation  \n ${link}`;
+  await MailTransporter(email, subject, text);
+  res.send(result);
+});
+
 app.post("/activate-account/:user_id", async (req, res) => {
   const { userid } = req.body;
   const result = await setAccountActivated(userid);
