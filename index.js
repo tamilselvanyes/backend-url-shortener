@@ -40,7 +40,7 @@ app.post("/signup", async (req, res) => {
     activated: false,
   };
   const result = await createUser(new_user);
-  const link = `${process.env.BASE_URL}/activate-account/${
+  const link = `${process.env.HOST}/activate-account/${
     (await getUserByEmail(email))._id
   }`;
   const subject = "Account Activation";
@@ -141,7 +141,7 @@ app.post("/reset-password", async (req, res) => {
   };
 
   await createTokenForUser(user_token);
-  const link = `${process.env.BASE_URL}/reset-password/${userFromDb._id}/${token}`;
+  const link = `${process.env.HOST}/reset-password/${userFromDb._id}/${token}`;
   const subject = "Rest Password";
   const text = `Please Click the link below to reset the passsword for security reasons the link will be expired in the next 10 minutes \n ${link}`;
   await MailTransporter(email, subject, text);
@@ -162,7 +162,6 @@ app.post("/login", async function (request, response) {
   } else {
     const storedPassword = userfromDB.password;
     const isPasswordMatch = await bcrypt.compare(password, storedPassword);
-    console.log("Login Successful  " + isPasswordMatch);
     if (isPasswordMatch) {
       const token = jwt.sign({ id: userfromDB._id }, process.env.SECRET_KEY);
       response.status(200).send({ message: "Login Successful", token: token });
